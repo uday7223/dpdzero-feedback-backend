@@ -9,9 +9,6 @@ router = APIRouter(
     tags=["Feedback"]
 )
 
-# ----------------------------
-# Create Feedback
-# ----------------------------
 @router.post("/", response_model=schemas.FeedbackResponse)
 def create_feedback(
     feedback: schemas.FeedbackCreate,
@@ -19,11 +16,10 @@ def create_feedback(
     current_user: models.User = Depends(oauth2.get_current_user)
 ):
     
-    # 🚫 Check if current user is a manager
+    
     if current_user.role != models.RoleEnum.manager:
         raise HTTPException(status_code=403, detail="Only managers can create feedback")
 
-    # ✅ Check if the employee belongs to the manager
     employee = db.query(models.User).filter(
     models.User.id == feedback.employee_id,
     models.User.role == models.RoleEnum.employee
@@ -47,9 +43,6 @@ def create_feedback(
     db.refresh(new_feedback)
     return new_feedback
 
-# ----------------------------
-# Get All Feedback for Employee
-# ----------------------------
 @router.get("/employee", response_model=List[schemas.FeedbackResponse])
 def get_my_feedback(
     db: Session = Depends(get_db),
@@ -61,9 +54,7 @@ def get_my_feedback(
     feedbacks = db.query(models.Feedback).filter(models.Feedback.employee_id == current_user.id).all()
     return feedbacks
 
-# ----------------------------
-# Get All Feedback for Manager's Team
-# ----------------------------
+
 @router.get("/team", response_model=List[schemas.FeedbackResponse])
 def get_team_feedback(
     db: Session = Depends(get_db),
@@ -75,9 +66,6 @@ def get_team_feedback(
     feedbacks = db.query(models.Feedback).filter(models.Feedback.manager_id == current_user.id).all()
     return feedbacks
 
-# ----------------------------
-# Update Feedback
-# ----------------------------
 @router.put("/{feedback_id}", response_model=schemas.FeedbackResponse)
 def update_feedback(
     feedback_id: int,
@@ -100,9 +88,7 @@ def update_feedback(
     db.refresh(feedback)
     return feedback
 
-# ----------------------------
-# Acknowledge Feedback
-# ----------------------------
+
 @router.put("/acknowledge/{feedback_id}")
 def acknowledge_feedback(
     feedback_id: int,
